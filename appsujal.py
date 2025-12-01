@@ -4,10 +4,10 @@ import pandas as pd
 import sqlite3
 from groq import Groq
 
-# Import your custom modules
+
 from sujal_codio_project import create_connection, ex1, ex2, ex3, ex4, ex5, ex6, ex7, ex8, ex9, ex10, ex11
 
-# --- CONFIGURATION & SETUP ---
+
 st.set_page_config(
     page_title="Enterprise Sales Analytics",
     page_icon="📈",
@@ -19,7 +19,7 @@ DB_PATH = "normalized.db"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "12345678")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# --- AUTHENTICATION STATE MANAGEMENT ---
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
@@ -29,7 +29,7 @@ def check_password():
     else:
         st.error("❌ Incorrect password. Please access denied.")
 
-# --- LOGIN SCREEN (UI LAYER 1) ---
+
 if not st.session_state.authenticated:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -43,9 +43,9 @@ if not st.session_state.authenticated:
             unsafe_allow_html=True
         )
         st.text_input("Enter Password", type="password", key="password_input", on_change=check_password)
-    st.stop() # Halt app execution here if not logged in
+    st.stop() 
 
-# --- MAIN APP LOGIC (Only runs if authenticated) ---
+
 
 if not GROQ_API_KEY:
     st.error("⚠️ System Alert: GROQ_API_KEY not found in environment variables.")
@@ -53,7 +53,7 @@ if not GROQ_API_KEY:
 
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# --- HELPER FUNCTIONS ---
+
 @st.cache_resource
 def get_connection():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -72,7 +72,7 @@ def run_query(sql: str) -> pd.DataFrame:
     conn = get_connection()
     return pd.read_sql_query(sql, conn)
 
-# --- SIDEBAR: GLOBAL CONTROLS ---
+
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=50) # Generic analytics icon
     st.title("Control Panel")
@@ -88,14 +88,14 @@ with st.sidebar:
         st.session_state.authenticated = False
         st.rerun()
 
-# --- MAIN DASHBOARD LAYOUT ---
+
 st.title("📈 Enterprise Sales Dashboard")
 st.markdown("Analyze sales performance using standard reporting tools or AI-assisted queries.")
 
-# Use Tabs to separate functionality
+
 tab_reports, tab_ai = st.tabs(["📊 Standard Reports", "🤖 AI Analyst"])
 
-# --- TAB 1: PREDEFINED QUERIES ---
+
 with tab_reports:
     col_rep_1, col_rep_2 = st.columns([1, 3])
     
@@ -115,12 +115,11 @@ with tab_reports:
     with col_rep_2:
         st.subheader("Data Output")
         
-        # Logic handling
+       
         sql = ""
         run_data = False
         
-        # We trigger the logic immediately based on radio selection, 
-        # but for Custom SQL we need a text area.
+      
         if query_option == "Custom SQL Query":
             custom_sql = st.text_area(
                 "Enter raw SQL query:", 
@@ -131,7 +130,7 @@ with tab_reports:
                 sql = custom_sql
                 run_data = True
         else:
-            # For predefined options, we run immediately or on a lightweight interaction
+         
             run_data = True
             if query_option == "Customer Orders History (ex1)":
                 sql = ex1(get_connection(), selected_customer)
@@ -140,15 +139,15 @@ with tab_reports:
             elif query_option == "Global Sales Summary (ex3)":
                 sql = ex3(get_connection())
 
-        # Display Section
+    
         if run_data:
-            # Show SQL in an expander so it doesn't clutter the view
+           
             with st.expander("🔍 View Generated SQL Source"):
                 st.code(sql, language="sql")
             
             try:
                 df = run_query(sql)
-                # Show metric if it's a single number (often nice for 'Totals')
+                
                 if len(df) == 1 and len(df.columns) == 1:
                     val = df.iloc[0, 0]
                     st.metric(label="Calculated Result", value=str(val))
@@ -157,7 +156,7 @@ with tab_reports:
             except Exception as e:
                 st.error(f"Query Execution Failed: {e}")
 
-# --- TAB 2: AI ASSISTANT ---
+
 with tab_ai:
     st.markdown(
         """
@@ -208,7 +207,7 @@ with tab_ai:
                     )
                     sql_from_ai = response.choices[0].message.content.strip()
 
-                # Clean up AI response
+              
                 if sql_from_ai.startswith("```"):
                     sql_from_ai = sql_from_ai.strip("`").strip()
                     if sql_from_ai.lower().startswith("sql"):
@@ -216,7 +215,7 @@ with tab_ai:
 
                 st.success("Analysis Complete")
                 
-                # Split result into Code and Data
+            
                 res_col1, res_col2 = st.columns(2)
                 
                 with res_col1:
